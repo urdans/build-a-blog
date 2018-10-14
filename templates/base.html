@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="/static/style.css" rel="stylesheet" type="text/css" />
+    {% if logged_user_name() %}
+        <title>Urd@ns blog - {{logged_user_name()}}</title>
+    {% else %}
+        <title>Urd@ns blog</title>
+    {% endif %}
+</head>
+
+<body>
+    <div>
+        <h1 class="maintitle nomargin">Welcome to Urd@ns blog page</h1>
+        <h3 class="submaintitle"><i>"The thinking dutty-free zone"</i></h3>
+        <div class="toplink noblock">
+            <a href="/">Home</a>
+        </div>
+        {% if logged_user_name() %}
+            <div class="toplink noblock">
+                <a href="/myposts">My posts</a>
+            </div>
+            <div class="toplink noblock">
+                <a href="/newpost">New post</a>
+            </div>
+        {% endif %}
+        <div class="toplink noblock">
+            <a></a>
+        </div>
+        {% if logged_user_name() %}
+            <div class="toplink noblock">
+                <a href="/logout">Log out</a>
+            </div>
+        {% else %}
+            <div class="toplink noblock">
+                <a href="/register">Register</a>
+            </div>
+            <div class="toplink noblock">
+                <a href="/login">Log in</a>
+            </div>
+        {% endif %}
+
+        <div class="toplink noblock">
+            <a href="/about">About</a>
+        </div>
+    </div>
+    <hr>
+
+    {% block content%}
+    {% endblock %}
+</body>
+
+</html>

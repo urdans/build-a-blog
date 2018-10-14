@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <br>
+    <article class="media content-section">
+        <div class="media-body">
+            <div class="article-metadata">
+                <h1><i>Posts from {{user.name}}</i></h1>
+            </div>
+                {% for post in user.posts %}
+                    <small class="text-muted">{{post.date}}</small>    
+                    <h2><a class="article-title" href="/blog?titleid={{post.thread_id}}">{{post.thread.title}}</a></h2>
+                    <p class="article-content">{{post.text}}</p>
+                    <!-- {#<p class="article-content">{{post.text}}<a href="/"><button>less</button></a></p>#} -->
+                    <div class="article-bottomdata">
+                        <small class="text-muted"><i>{{post.repplies_count()}} repplies</i></small>    
+                        <a class="mr-2" href="/blog?repplyto={{post.id}}" style="margin-left:5em">Repply</a>
+                    </div>
+                    <br>
+                    <hr>
+                {% endfor %}
+            </div>
+    </article>
+    <br>
+{% endblock %}

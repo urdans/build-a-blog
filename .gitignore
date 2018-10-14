@@ -1,0 +1,4 @@
+.vscode
+__pycache__
+setupdb.py
+tests.py
