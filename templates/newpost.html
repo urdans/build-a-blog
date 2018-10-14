@@ -22,8 +22,8 @@
                         {% endif %}
                         <textarea name="newposttext" autofocus></textarea>
                         <br>
-                        <input type="hidden" name="threadid" value="{% if post %} {{post.thread.id}} {% else %} {{-1}} {% endif %}"/>
-                        <input type="hidden" name="postidrepplied" value="{% if post %} {{post.id}} {% else %} {{-1}} {% endif %}"/>
+                        <input type="hidden" name="threadid" value="{% if post %} {{post.thread.id}} {% else %} -1 {% endif %}"/>
+                        <input type="hidden" name="postidrepplied" value="{% if post %} {{post.id}} {% else %} -1 {% endif %}"/>
                         <a class="mr-2" href="/"><button>Cancel</button></a> <input type="submit" value="Post">
                     </form>
                 </div>

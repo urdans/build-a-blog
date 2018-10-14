@@ -7,17 +7,13 @@ os.system('cls')
 
 # TODO create the user/database and grant privileges
 
-print("Creating the database final_app")
-
-
-
-quit()
-
-
 
 # create all the tables
-print("Build-a-blog assignment setup\n")
+print("Build-a-blog assignment setup\n=============================\n")
+print("The following procedure will recreate all the needed tables and will populate them with some mock data.\n")
+print("The MySQL database 'build-a-blog' must exist prior to continue!")
 r = input("Proceed (y/n): ")
+
 if r in ("yY"):
     db.drop_all()
     db.create_all()

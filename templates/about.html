@@ -9,9 +9,17 @@
        Be respecfull of the other members of the community. 
     </p>
     <br>
-    There are {{registeredusers}} so far. Great!
+    <h3>Some stats about our community:</h3>
+    There are {{ registered_users_count() }}  registered users so far.
     <br>
-    There are {{usersonline}} users online.
+    <br>
+    There are {{ online_users_count() }} users online right now.
+    <ul>
+        {% for username in get_online_user_list() %}
+            <li>{{username}}</li>
+        {% endfor %}
+    </ul>
+
 </div>
 <br>
 {% endblock %}

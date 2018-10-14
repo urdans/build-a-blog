@@ -18,6 +18,8 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.secret_key = 'ab44ad479fbc554617359163faad52bef2bf622b'
 db = SQLAlchemy(app)
 
+Online_Users_List = []
+
 
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -85,8 +87,41 @@ def logged_user_name():
         if logged_user:
             return logged_user.name
 
-# This will allow me to call this function from a jinja2 template
+
+def register_online_user(username):
+    if not username in Online_Users_List:
+        Online_Users_List.append(username)
+
+
+def unregister_online_user(username):
+    if username in Online_Users_List:
+        Online_Users_List.remove()
+
+
+def unregister_online_user_by_id(user_id):
+    user = Users.query.filter_by(id=user_id).first()
+    if user:
+        unregister_online_user(user.name)
+
+
+def online_users_count():
+    return len(Online_Users_List)
+
+
+def get_online_user_list():
+    return Online_Users_List
+
+
+def registered_users_count():
+    return Users.query.count()
+
+
+# This will allow me to call these functions from a jinja2 template
 app.jinja_env.globals.update(logged_user_name=logged_user_name)
+app.jinja_env.globals.update(online_users_count=online_users_count)
+app.jinja_env.globals.update(get_online_user_list=get_online_user_list)
+app.jinja_env.globals.update(registered_users_count=registered_users_count)
+
 
 def user_exist(username):
     if len(username.strip()) > 3:
@@ -96,7 +131,7 @@ def user_exist(username):
 
 
 def validate_email(email):
-    if len(email.strip) > 4: # like k@m.i
+    if len(email.strip) > 4:  # like k@m.i
         match = re.search(
             r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b', email, re.I)
         if match:
@@ -132,12 +167,14 @@ def blog():
         user_id = session['user']
         new_post_text = request.form['newposttext']
         post_id_repplied = int(request.form['postidrepplied'])
-        print('\n****************************** repply **************************************')
+        print(
+            '\n****************************** repply **************************************')
         print('thread_id            :', thread_id)
         print('user_id              :', user_id)
         print('new_post_text        :', new_post_text[:60])
         print('post_id_repplied     :', post_id_repplied)
-        print('****************************************************************************\n')
+        print(
+            '****************************************************************************\n')
         # quede aqui. need threadid, *userid, *text, *date in format "2018-01-24", repply_id=1
         # create the post and save it to the db
         if (thread_id == -1) or (post_id_repplied == -1):  # it's a new post
@@ -163,7 +200,8 @@ def blog():
             # check that thread_id and post_id_repplied are actual ids to corresponding records
             if ((thread_id == Threads.query.filter_by(id=thread_id).first().id) and
                     post_id_repplied == Posts.query.filter_by(id=post_id_repplied).first().id):
-                new_post = Posts(thread_id, user_id, new_post_text, repply_id=post_id_repplied)
+                new_post = Posts(thread_id, user_id,
+                                 new_post_text, repply_id=post_id_repplied)
                 db.session.add(new_post)
                 db.session.commit()
                 return redirect('/myposts')
@@ -202,7 +240,7 @@ def blog():
         post = Posts.query.filter_by(id=repply_to_post_id).first()
         if post:
             return render_template("newpost.html", post=post, username=username)
-        else: # TODO i can get rid of this....
+        else:  # TODO i can get rid of this....
             return redirect("/")
 
     return redirect("/")
@@ -233,6 +271,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         session['user'] = new_user.id
+        register_online_user(user_name)
         return redirect('/')
     else:
         return render_template("signup.html")
@@ -240,6 +279,7 @@ def register():
 
 @app.route('/logout')
 def logout():
+    unregister_online_user_by_id(session['user'])
     del session['user']
     # TODO flash a logout message
     return redirect('/')
@@ -252,16 +292,19 @@ def login():
         password = request.form['psw']
         validated_password = validate_password(password, password)
         user = user_exist(user_name)
-        print('****************************** login ***************************************')
-        print('user_name            :',user_name)
-        print('password             :',password)
-        print('validated_password   :',validated_password)
-        print('user                 :',user)
-        print('****************************************************************************')
+        print(
+            '****************************** login ***************************************')
+        print('user_name            :', user_name)
+        print('password             :', password)
+        print('validated_password   :', validated_password)
+        print('user                 :', user)
+        print(
+            '****************************************************************************')
 
         if user:
             if user[1] == validated_password:
-                session['user'] = user[0]
+                session['user'] = user[0]  # that's the user id
+                register_online_user(user_name)
                 return redirect('/')
 
         # TODO use flash messages
@@ -278,6 +321,7 @@ def myposts():
         # TODO flash a message like you must be logged in
         return redirect("/")
 
+
 @app.route('/newpost')
 def newpost():
     username = logged_user_name()
@@ -288,5 +332,24 @@ def newpost():
         return redirect("/")
 
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+
 if __name__ == "__main__":
     app.run()
+
+"""
+Lessons learned:
+
+1. To make the code maintainable and maybe simpler:
+    - make one template per route.
+    - make one route per method
+    - make one controller per route
+
+2. For serious websites, dont pass clear tags and ids, pass tokens and codes (need to check this)
+
+3. To be able to call my custom function from a jinja2 template, register the function name like this:
+    app.jinja_env.globals.update(myfunctionname=myfunctionname)
+"""
