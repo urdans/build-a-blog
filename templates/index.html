@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% for Post in Posts.query.all() %}
+    {% for Post in Posts.query.order_by("date desc").all() %}
     <br>
-    <article class="media content-section">
-        <div class="media-body">
+    <article class="media content-section" style="margin-left: 20px;margin-right: 20px;">
+        <div class="media-body" style="margin-left: 20px;">
             <div class="article-metadata">
                 <a class="mr-2" href="/blog?userid={{Post.user_id}}">{{Post.user.name}}</a>
                 <small class="text-muted" style="margin-left:5em">{{Post.date}}</small>
             </div>
-            <h2><a class="article-title" href="/blog?titleid={{Post.thread_id}}">{{Post.thread.title}}</a></h2>
-            <p class="article-content">{{Post.text[:255]}}<a href="/blog?rmpostid={{Post.id}}">...<button>read more</button></a></p>
+            <h3><a class="article-title" href="/blog?titleid={{Post.thread_id}}">{{Post.thread.title}}</a></h3>
+            <p class="article-content">{{Post.text[:255]}}<a href="/blog?rmpostid={{Post.id}}"> ...more</a></p>
             <div class="article-bottomdata">
                 <small class="text-muted"><i>{{Post.repplies_count()}} repplies</i></small>    
                 <a class="mr-2" href="/blog?repplyto={{Post.id}}" style="margin-left:5em">Repply</a>

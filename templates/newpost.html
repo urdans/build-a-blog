@@ -2,14 +2,14 @@
 
 {% block content %}
     <br>
-    <article class="media content-section">
-        <div class="media-body">
+    <article class="media content-section" style="margin-left: 20px;margin-right: 20px;">
+        <div class="media-body" style="margin-left: 20px;">
             {% if post %} {# it's a repply to an existing post, the one it's shown below #}
                 <div class="article-metadata">
                     <a class="mr-2" href="/blog?userid={{post.user_id}}">{{post.user.name}}</a>
                     <small class="text-muted" style="margin-left:5em">{{post.date}}</small>
                 </div>
-                <h2><a class="article-title" href="/blog?titleid={{post.thread_id}}">{{post.thread.title}}</a></h2>
+                <h3><a class="article-title" href="/blog?titleid={{post.thread_id}}">{{post.thread.title}}</a></h3>
                 <p class="article-content">{{post.text}}</p>
             {% endif %}
             <div class="article-bottomdata">
@@ -20,11 +20,13 @@
                             <input type="text" placeholder="Enter the title for this post" name="threadtitle" autofocus>
                             <br>
                         {% endif %}
-                        <textarea name="newposttext" autofocus></textarea>
+                        <div class="article-content">
+                            <textarea name="newposttext" autofocus></textarea>
+                        </div>
                         <br>
                         <input type="hidden" name="threadid" value="{% if post %} {{post.thread.id}} {% else %} -1 {% endif %}"/>
                         <input type="hidden" name="postidrepplied" value="{% if post %} {{post.id}} {% else %} -1 {% endif %}"/>
-                        <a class="mr-2" href="/"><button>Cancel</button></a> <input type="submit" value="Post">
+                        <button formaction="/">Cancel</button><input type="submit" value="Post">
                     </form>
                 </div>
             </div>

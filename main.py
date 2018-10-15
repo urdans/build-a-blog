@@ -28,7 +28,8 @@ class Users(db.Model):
     password = db.Column(db.String(120), nullable=False)
     active = db.Column(db.Boolean)
     # posts = db.relationship('Posts', backref='thread')
-    posts = db.relationship('Posts', back_populates='user')
+    posts = db.relationship(
+        'Posts', order_by="desc(Posts.date)", back_populates='user')
 
     def __init__(self, name, email, password):
         self.name = name
@@ -44,7 +45,8 @@ class Threads(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), unique=True, nullable=False)
     active = db.Column(db.Boolean)
-    posts = db.relationship('Posts', back_populates='thread')
+    posts = db.relationship(
+        'Posts', order_by="desc(Posts.date)", back_populates='thread')
 
     def __init__(self, title):
         self.title = title
@@ -80,6 +82,10 @@ class Posts(db.Model):
 # some helper functions
 
 
+def Ordered_Post_by(order):
+    return Posts.query.order_by(order).all()
+
+
 def logged_user_name():
     if 'user' in session:
         logged_user = Users.query.filter_by(id=session['user']).first()
@@ -94,7 +100,7 @@ def register_online_user(username):
 
 def unregister_online_user(username):
     if username in Online_Users_List:
-        Online_Users_List.remove()
+        Online_Users_List.remove(username)
 
 
 def unregister_online_user_by_id(user_id):
@@ -123,18 +129,20 @@ app.jinja_env.globals.update(registered_users_count=registered_users_count)
 
 
 def user_exist(username):
-    if len(username.strip()) > 3:
-        user = Users.query.filter_by(name=username).first()
-        if user:
-            return user.id, user.password
+    un = username.strip()
+    user = Users.query.filter_by(name=un).first()
+    if user:
+        return user.id, user.password
 
 
 def validate_email(email):
-    if len(email.strip) > 4:  # like k@m.i
+    em = email.strip()
+    if len(em) > 4:  # like k@m.i
         match = re.search(
-            r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b', email, re.I)
+            r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b', em, re.I)
         if match:
             return match.group()
+    # return ""
 
 
 def validate_password(password, repeated_password):
@@ -154,6 +162,7 @@ def filter_bad_endpoints():
 
 @app.route("/")
 def main():
+    # Ordered_Post_by("date desc")
     return render_template("index.html", Posts=Posts)
 
 
@@ -250,18 +259,23 @@ def blog():
 def register():
     if request.method == 'POST':
         # we are trying to register a new user
-        # check the user availability
         user_name = request.form['username']
+        entered_email = request.form['email']
+        # check user length
+        if len(user_name) < 3:
+            flash("User name must be at least 3 characters long.", "error")
+            return render_template("signup.html", username_value=user_name, email_value=entered_email)
+
+        # check the user availability
         if user_exist(user_name):
             flash("User name not available.", "msg")
-            return render_template("signup.html", username_value=user_name)
+            return render_template("signup.html", username_value=user_name, email_value=entered_email)
 
         # check the email is valid
-        entered_email = request.form['email']
         validated_email = validate_email(entered_email)
-        if not validate_email:
+        if not validated_email:
             flash("Bad email address.", "error")
-            return render_template("signup.html", email_value=entered_email)
+            return render_template("signup.html", username_value=user_name, email_value=entered_email)
 
         # check the length of password. It doesnt have to be a complex one
         password = request.form['psw']
@@ -269,7 +283,7 @@ def register():
         validated_password = validate_password(password, repeated_password)
         if not validated_password:
             flash("Password must match and must be at least 5 characters long.", "error")
-            return render_template("signup.html")
+            return render_template("signup.html", username_value=user_name, email_value=entered_email)
 
         # at this point, all looks good to proceed creating the new user
         new_user = Users(user_name, validated_email, validated_password)

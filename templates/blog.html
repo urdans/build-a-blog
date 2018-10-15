@@ -2,14 +2,14 @@
 
 {% block content %}
     <br>
-    <article class="media content-section">
-        <div class="media-body">
+    <article class="media content-section" style="margin-left: 20px;margin-right: 20px;">
+        <div class="media-body" style="margin-left: 20px;">
             <div class="article-metadata">
                 <a class="mr-2" href="/blog?userid={{post.user_id}}">{{post.user.name}}</a>
                 <small class="text-muted" style="margin-left:5em">{{post.date}}</small>
             </div>
-            <h2><a class="article-title" href="/blog?titleid={{post.thread_id}}">{{post.thread.title}}</a></h2>
-            <p class="article-content">{{post.text}}<a href="/"><button>less</button></a></p>
+            <h3><a class="article-title" href="/blog?titleid={{post.thread_id}}">{{post.thread.title}}</a></h3>
+            <p class="article-content">{{post.text}}<a href="/"> ...less</a></p>
             <div class="article-bottomdata">
                 <small class="text-muted"><i>{{post.repplies_count()}} repplies</i></small>    
                 <a class="mr-2" href="/blog?repplyto={{post.id}}" style="margin-left:5em">Repply</a>

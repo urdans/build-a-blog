@@ -2,10 +2,10 @@
 
 {% block content %}
     <br>
-    <article class="media content-section">
-        <div class="media-body">
+    <article class="media content-section" style="margin-left: 20px;margin-right: 20px;">
+        <div class="media-body" style="margin-left: 20px;">
             <div class="article-metadata">
-                <h1><i>{{thread.title}}</i></h1>
+                <h3><i>{{thread.title}}</i></h3>
             </div>
                 {% for post in thread.posts %}
                     <a class="mr-2" href="/blog?userid={{post.user_id}}">{{post.user.name}}</a>

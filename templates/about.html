@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<br>
-<div>
+<article class="content-section" style="margin-left: 20px;margin-right: 20px;">
     <h1>About our community</h1>
     <br>
     <p>This is a blog to share any idea of any kind without shame. You can be simplistic or sophisticated, in all cases you are welcome.
@@ -12,14 +11,11 @@
     <h3>Some stats about our community:</h3>
     There are {{ registered_users_count() }}  registered users so far.
     <br>
-    <br>
     There are {{ online_users_count() }} users online right now.
     <ul>
         {% for username in get_online_user_list() %}
             <li>{{username}}</li>
         {% endfor %}
     </ul>
-
-</div>
-<br>
+</article>
 {% endblock %}

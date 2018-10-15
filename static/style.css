@@ -1,3 +1,16 @@
+textarea {
+  margin-left: 2%;
+  color: #5a5a5a;
+  border-color: #e2e2e2;
+  border-width: 1px;
+  border-style: ridge;
+  font-family: 'Times New Roman', Times, serif;
+  padding: 10px;
+  width: 92%;
+  height: 100px;
+  resize: none;
+}
+
 hr {
   color: #444444;
 }
@@ -26,7 +39,8 @@ a {
 }
 
 body {
-    background: #fafafa;
+    /* background: #fafafa; */
+    background: #ececec;
     color: #333333;
     margin-top: 5rem;
   }
