@@ -20,24 +20,15 @@
             <hr>
             <label for="username"><b>User name:</b></label>
             <input type="text" value="{{username_value}}" placeholder="Enter user name" name="username">
-            {% if baduser %}
-                <small>{{baduser}}</small>
-            {% endif %}
 
             {% if not loggin %}
                 <label for="email"><b>Email:</b></label>
                 <input type="text" value="{{email_value}}" placeholder="Enter Email" name="email">
-                {% if bademail %}
-                    <small>{{bademail}}</small>
-                {% endif %}
             {% endif %}
 
             <label for="psw"><b>Password:</b></label>
             <input type="password" placeholder="Enter Password" name="psw">
             {% if not loggin %}
-                {% if badpassword %}
-                    <small>{{badpassword}}</small>
-                {% endif %}
                 <label for="psw-repeat"><b>Retype Password:</b></label>
                 <input type="password" placeholder="Confirm password" name="repsw">
             {% endif %}

@@ -65,7 +65,6 @@ class Posts(db.Model):
     user = db.relationship('Users', back_populates='posts')
 
     def repplies_count(self):
-        # TODO this function should use the sql count function for better performance
         return Posts.query.filter_by(repply_id=self.id).count()
 
     def __init__(self, thread_id, user_id, text, date=None, repply_id=None):
@@ -161,6 +160,8 @@ def main():
 @app.route("/blog", methods=['GET', 'POST'])
 def blog():
     if request.method == 'POST':
+        # we are about to create a new post, so we start collecting the inputs from the user, but before we check
+        # that the user is logged in
         if not logged_user_name():
             return redirect("/login")
         thread_id = int(request.form['threadid'])
@@ -175,14 +176,15 @@ def blog():
         print('post_id_repplied     :', post_id_repplied)
         print(
             '****************************************************************************\n')
-        # quede aqui. need threadid, *userid, *text, *date in format "2018-01-24", repply_id=1
-        # create the post and save it to the db
-        if (thread_id == -1) or (post_id_repplied == -1):  # it's a new post
+        # we check if it's a new post and thread or if it's a repply
+        if (thread_id == -1) or (post_id_repplied == -1):
+            # It's a new post. So we first create the thread and the the post itself, but before we check
+            # the lengh of the inputs to be correct.
             new_thread_title = request.form['threadtitle']
             if not new_post_text or len(new_thread_title) <= 3:
-                # TODO flash a message indicating that empty posts are not allowed and the title must be at least 4 letters long
+                flash(
+                    "Empty posts are not allowed and the title must be at least 4 characters long.", "error")
                 return redirect('/newpost')
-            # need to create the thread first, so i need to request the thread title first
             new_thread = Threads(new_thread_title)
             db.session.add(new_thread)
             db.session.commit()
@@ -191,13 +193,13 @@ def blog():
             db.session.add(new_post)
             db.session.commit()
             return redirect('/myposts')
-            # then use the thread.id for creating the new post
-            pass
-        else:  # it's a repply to an existing post
+        else:
+            # it's a repply to an existing post
             if not new_post_text:
-                # TODO flash a message indicating that empty posts are not allowed
+                # this should never happen unless the user is hacking...
+                flash("Empty posts are not allowed.", "error")
                 return redirect('/blog?repplyto={}'.format(post_id_repplied))
-            # check that thread_id and post_id_repplied are actual ids to corresponding records
+            # check that thread_id and post_id_repplied are valid ids to corresponding records
             if ((thread_id == Threads.query.filter_by(id=thread_id).first().id) and
                     post_id_repplied == Posts.query.filter_by(id=post_id_repplied).first().id):
                 new_post = Posts(thread_id, user_id,
@@ -205,43 +207,41 @@ def blog():
                 db.session.add(new_post)
                 db.session.commit()
                 return redirect('/myposts')
+            else:
+                flash("I see you are tricking me, ha ha...!", "error")
             # at this point the post have not been created and we redirect to home
 
+    # read more of that post
     read_full_post_id = request.args.get('rmpostid', '')
     if read_full_post_id:
         post = Posts.query.filter_by(id=read_full_post_id).first()
         if post:
             return render_template("blog.html", post=post)
-        else:
-            return redirect("/")
 
+    # see that author's posts
     posts_from_user_id = request.args.get('userid', '')
     if posts_from_user_id:
         user = Users.query.filter_by(id=posts_from_user_id).first()
         if user:
             return render_template("userblogs.html", user=user)
-        else:
-            return redirect("/")
 
+    # see all the post about that thread
     posts_from_title_id = request.args.get('titleid', '')
     if posts_from_title_id:
         thread = Threads.query.filter_by(id=posts_from_title_id).first()
         if thread:
             return render_template("threads.html", thread=thread)
-        else:
-            return redirect("/")
 
+    # repply to that post
     repply_to_post_id = request.args.get('repplyto', '')
     if repply_to_post_id:
         username = logged_user_name()
         if not username:
-            # TODO flash a message indicating "you must be logged in, please log in"
+            flash("You must log in.", "error")
             return redirect("/login")
         post = Posts.query.filter_by(id=repply_to_post_id).first()
         if post:
             return render_template("newpost.html", post=post, username=username)
-        else:  # TODO i can get rid of this....
-            return redirect("/")
 
     return redirect("/")
 
@@ -249,24 +249,29 @@ def blog():
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
+        # we are trying to register a new user
+        # check the user availability
         user_name = request.form['username']
         if user_exist(user_name):
-            # TODO use flash messages
-            return render_template("signup.html", username_value=user_name, baduser="User name not available")
+            flash("User name not available.", "msg")
+            return render_template("signup.html", username_value=user_name)
 
+        # check the email is valid
         entered_email = request.form['email']
         validated_email = validate_email(entered_email)
         if not validate_email:
-            # TODO use flash messages
-            return render_template("signup.html", email_value=entered_email, bademail="Bad email address")
+            flash("Bad email address.", "error")
+            return render_template("signup.html", email_value=entered_email)
 
+        # check the length of password. It doesnt have to be a complex one
         password = request.form['psw']
         repeated_password = request.form['repsw']
         validated_password = validate_password(password, repeated_password)
         if not validated_password:
-            # TODO use flash messages
-            return render_template("signup.html", badpassword="Password must match and must be at least 5 characters long")
+            flash("Password must match and must be at least 5 characters long.", "error")
+            return render_template("signup.html")
 
+        # at this point, all looks good to proceed creating the new user
         new_user = Users(user_name, validated_email, validated_password)
         db.session.add(new_user)
         db.session.commit()
@@ -274,6 +279,7 @@ def register():
         register_online_user(user_name)
         return redirect('/')
     else:
+        # we are just displaying the form
         return render_template("signup.html")
 
 
@@ -281,13 +287,14 @@ def register():
 def logout():
     unregister_online_user_by_id(session['user'])
     del session['user']
-    # TODO flash a logout message
+    flash("You're logged out.", "msg")
     return redirect('/')
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        # we are trying to log in an existing user
         user_name = request.form['username']
         password = request.form['psw']
         validated_password = validate_password(password, password)
@@ -301,14 +308,18 @@ def login():
         print(
             '****************************************************************************')
 
+        # check user exists
         if user:
+            # check password hashes match
             if user[1] == validated_password:
                 session['user'] = user[0]  # that's the user id
                 register_online_user(user_name)
+                flash("You are logged in", "msg")
                 return redirect('/')
 
-        # TODO use flash messages
-        return render_template("signup.html", username_value=user_name, baduser="Wrong user/password", loggin=1)
+        flash("Wrong user/password.", "error")
+        # the loggin flag is to indicate it's a log in, not a sign up
+        return render_template("signup.html", username_value=user_name, loggin=1)
     else:
         return render_template("signup.html", loggin=1)
 
@@ -318,7 +329,7 @@ def myposts():
     if logged_user_name:
         return redirect('/blog?userid={}'.format(session['user']))
     else:
-        # TODO flash a message like you must be logged in
+        flash("You must log in to see your posts.", "msg")
         return redirect("/")
 
 
@@ -328,7 +339,7 @@ def newpost():
     if username:
         return render_template("newpost.html", username=username)
     else:
-        # TODO flash a message like you must be logged in
+        flash("You must log in to see your posts.", "msg")
         return redirect("/")
 
 

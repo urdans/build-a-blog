@@ -11,6 +11,14 @@
     {% else %}
         <title>Urd@ns blog</title>
     {% endif %}
+    <style>
+        .error {
+            color: rgb(150, 0, 0);
+        }
+        .msg {
+            color: #323b41;
+        }
+    </style>
 </head>
 
 <body>
@@ -49,9 +57,18 @@
         </div>
     </div>
     <hr>
+    <br>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        <ul>
+        {% for category,message in messages %}
+            <li class="{{category}}">{{message}}</li>
+        {% endfor %}
+        </ul>
+    {% endwith %}
 
     {% block content%}
     {% endblock %}
+    <br>
 </body>
 
 </html>
