@@ -12,6 +12,8 @@ os.system('cls')
 print("Build-a-blog assignment setup\n=============================\n")
 print("The following procedure will recreate all the needed tables and will populate them with some mock data.\n")
 print("The MySQL database 'build-a-blog' must exist prior to continue!")
+print("The user 'build-a-blog' must exist. Password 'urdans'")
+
 r = input("Proceed (y/n): ")
 
 if r in ("yY"):
