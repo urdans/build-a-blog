@@ -163,6 +163,15 @@ def filter_bad_endpoints():
 @app.route("/")
 def main():
     # Ordered_Post_by("date desc")
+    un = logged_user_name()
+    cnt = Posts.query.count() == 0
+    if un and cnt:
+        flash('Welcome {}! There is no posted blog yet.'.format(un))
+        flash('Be the first!. Start posting your thoughts!')
+    elif not un and cnt:
+        flash('There is no posted blog yet. Be the first!.')
+        flash('Log in or register and start posting your thoughts!')
+
     return render_template("index.html", Posts=Posts)
 
 
